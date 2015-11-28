@@ -3,14 +3,14 @@
 ## Important!
 
 The gem creation is under active development, current state is: beta. The JSON and 
-[BOSS(https://github.com/sergeych/boss_protocol) formats are supported out of the box,
+[BOSS](https://github.com/sergeych/boss_protocol) formats are supported out of the box,
 thogh XML and other could be easily implemented.
 
 ## Description
 
 The simple and elegant cross-platform RPC protocol that uses any formatter/transport capable of
 transmitting dictionary-like objects, for example, JSON, XML, BSON, BOSS and many others. This gem
-supports out of the box JSON and [BOSS(https://github.com/sergeych/boss_protocol) protocols. 
+supports out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols. 
 
 RPC is made asynchronously, each call can have any return values. While one call is waiting,
 other calls can be executed. The protocol is bidirectional Call parameters could be
@@ -95,7 +95,7 @@ More creation options ofr both provider and interface creation are:
                          build the transport over.
                          
 
-Get more in [online docs(http://www.rubydoc.info/gems/farcall)
+Get more in [online docs](http://www.rubydoc.info/gems/farcall)
 
 ## Contributing
 
