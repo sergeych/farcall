@@ -8,9 +8,12 @@ Gem::Specification.new do |spec|
   spec.version       = Farcall::VERSION
   spec.authors       = ["sergeych"]
   spec.email         = ["real.sergeych@gmail.com"]
-  spec.summary       = %q{Simple, elegant and cross-platofrm RCP and RMI protocol}
-  spec.description   = %q{Can work with any transpot capable of conveing dictionaries (json, xml, bson, boss, yaml.
-                         Incides some transports.}
+  spec.summary       = %q{Simple, elegant and cross-platofrm RPC protocol}
+  spec.description   = <<-End
+    Simple and effective cross-platform RPC protocol. Can work with any transport capable to
+    pass structures (dictionaries, hashes, whatever you name it). Out of the box provides
+    JSON and BOSS formats over streams and sockets.
+    End
   spec.homepage      = ""
   spec.license       = "MIT"
 
