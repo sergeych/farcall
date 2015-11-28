@@ -2,7 +2,9 @@
 
 ## Important!
 
-The gem creation is under active development, current state is: beta. Only JSON format is supported.
+The gem creation is under active development, current state is: beta. The JSON and 
+(BOSS)[https://github.com/sergeych/boss_protocol] formats are supported out of the box,
+thogh XML and other could be easily implemented.
 
 ## Description
 
@@ -15,9 +17,8 @@ other calls can be executed. The protocol is bidirectional Call parameters could
 both arrays of arguments and keyword arguments, return value could be any object, e.g. array, 
 dictionary, wahtever.
 
-Exception/errors transmitting is also supported.
-
-The interface is very simple and rubyish:
+Exception/errors transmitting is also supported. The interface is very simple and rubyish. The 
+protocol is very easy to support, its description will be available in the github wiki soon.
 
 ## Installation
 
