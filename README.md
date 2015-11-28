@@ -13,7 +13,9 @@ both arrays of arguments and keyword arguments, return value could be any object
 dictionary, wahtever.
 
 Exception/errors transmitting is also supported. The interface is very simple and rubyish. The 
-protocol is very easy to support, its description will be available in the github wiki soon.
+protocol is very easy to implement if there is no implementation, see 
+[Farcall protocol specification](https://github.com/sergeych/farcall/wiki). Java library for
+Android and desktop is coming soon.
 
 ## Installation
 
@@ -120,7 +122,10 @@ So, I would recommend:
 
 ## Documentation
 
-Consult [online docs](http://www.rubydoc.info/gems/farcall)
+* [Farcall protocol](https://github.com/sergeych/farcall/wiki)
+
+
+* Gem [online docs](http://www.rubydoc.info/gems/farcall)
 
 ## Contributing
 

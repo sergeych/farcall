@@ -1,5 +1,8 @@
 module Farcall
 
+  # Boss transport is more spece-effective than json, supports more data types, and does not need
+  # delimiters to separate packets in the stream. Creation parameters are the same as of
+  # Farcall::Transport
   class BossTransport < Farcall::Transport
     include TransportBase
 

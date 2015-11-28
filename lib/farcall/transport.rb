@@ -45,8 +45,6 @@ module Farcall
       end
     end
 
-    attr :closed
-
     # Tansport must call this process on each incoming hash
     # passing it as the only parameter, e.g. self.on_data_received(hash)
     attr_accessor :on_data_received, :on_abort, :on_close
@@ -68,12 +66,18 @@ module Farcall
       @on_close and @on_close.call
     end
 
+    def closed?
+      @closed
+    end
+
     protected
 
+    # Call it when your connection is closed
     def connection_closed
       close
     end
 
+    # Call it when the connection is aborted due to an exception
     def connection_aborted exceptoin
       STDERR.puts "Farcall: connection aborted: #{$!.class.name}: #{$!}"
       @on_abort and @on_abort.call $!
