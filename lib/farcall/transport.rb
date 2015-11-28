@@ -1,4 +1,3 @@
-
 module Farcall
 
   # Generic error in Farcall library
@@ -35,6 +34,12 @@ module Farcall
       case format
         when :json
           Farcall::JsonTransport.new **params
+        when :boss
+          if defined?(Farcall::BossTransport)
+            Farcall::BossTransport.new **params
+          else
+            raise Farcall::Error.new("add gem 'boss-protocol' to use boss transport")
+          end
         else
           raise Farcall::Error, "unknown format: #{format}"
       end

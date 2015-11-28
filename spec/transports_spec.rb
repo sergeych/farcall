@@ -70,5 +70,29 @@ describe 'transports' do
     results.should == [{ 'echo' => { 'foo' => 'bar' } }, { 'echo' => { 'one' => 2 } }]
   end
 
+  it 'should run boss transport' do
+    s1, s2 = Socket.pair(:UNIX, :STREAM, 0)
+
+    j1 = Farcall::BossTransport.new socket: s1
+    j2 = Farcall::BossTransport.new socket: s2
+
+    j2.receive_data { |data|
+      j2.send_data({ echo: data })
+    }
+
+    results = []
+    j1.receive_data { |data|
+      results << data
+    }
+
+    j1.send_data({ foo: "bar" })
+    j1.send_data({ one: 2 })
+    sleep 0.01
+    j1.close
+    j2.close
+
+    results.should == [{ 'echo' => { 'foo' => 'bar' } }, { 'echo' => { 'one' => 2 } }]
+  end
+
 
 end

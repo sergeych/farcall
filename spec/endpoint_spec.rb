@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'stringio'
 
 # The sample class that exports all its methods to the remote callers:
 #
@@ -13,6 +12,7 @@ class TestProvider < Farcall::Provider
     return "Foo: #{a+b}, #{optional}"
   end
 end
+
 
 describe 'endpoint' do
   include Farcall
@@ -41,12 +41,11 @@ describe 'endpoint' do
     ib.split.should == ['Hello', 'world']
   end
 
-  it 'should connect via shortcut' do
+  def check_protocol format
     s1, s2 = Socket.pair(:UNIX, :STREAM, 0)
 
-    tp = TestProvider.new socket: s1, format: :json
-    i = Farcall::Interface.new socket: s2, format: :json, provider: "Hello world"
-
+    tp = TestProvider.new socket: s1, format: format
+    i  = Farcall::Interface.new socket: s2, format: format, provider: "Hello world"
 
     expect(-> { i.foo() }).to raise_error Farcall::RemoteError
 
@@ -57,6 +56,14 @@ describe 'endpoint' do
     i.b.should == 6
 
     tp.far_interface.split.should == ['Hello', 'world']
+  end
+
+  it 'should connect json via shortcut' do
+    check_protocol :json
+  end
+
+  it 'should connect boss via shortcut' do
+    check_protocol :boss
   end
 
 end

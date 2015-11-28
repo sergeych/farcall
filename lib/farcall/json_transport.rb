@@ -1,4 +1,5 @@
 require 'json'
+require 'socket'
 
 module Farcall
 
@@ -10,15 +11,20 @@ module Farcall
     end
 
     def read length=1
-      data = ''
-      while data.length < length
-        data << @socket.recv(length - data.length, Socket::MSG_WAITALL)
-      end
-      data
+      # data = ''
+      # while data.length < length
+      #   data << @socket.recv(length - data.length, Socket::MSG_WAITALL)
+      # end
+      # data
+      @socket.read length
     end
 
     def write data
       @socket.write data
+    end
+
+    def eof?
+      @socket.eof?
     end
 
     def << data
@@ -110,7 +116,6 @@ module Farcall
         close_connection
         @thread and @thread.join
         @thread = nil
-        @in_close = false
       end
     end
 
@@ -118,7 +123,7 @@ module Farcall
 
     def load_loop
       buffer = ''
-      while true
+      while !@input.eof?
         buffer << @input.read(1)
         if buffer[@dlength..-1] == @delimiter
           on_data_received and on_data_received.call(JSON.parse(buffer[0...@dlength]))
@@ -130,6 +135,7 @@ module Farcall
     rescue
       if !@closing
         STDERR.puts "Farcall::JsonTransport read loop failed: #{$!.class.name}: #$!"
+        STDERR.puts $!.backtrace.join("\n")
         connection_aborted $!
       else
         close

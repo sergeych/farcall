@@ -7,7 +7,8 @@ The gem creation is under active development, current state is: beta. Only JSON 
 ## Description
 
 The simple and elegant cross-platform RPC protocol that uses any formatter/transport capable of
-transmitting dictionary-like objects, for example, JSON, XML, BSON, BOSS and many others.
+transmitting dictionary-like objects, for example, JSON, XML, BSON, BOSS and many others. This gem
+supports out of the box JSON and (BOSS)[https://github.com/sergeych/boss_protocol] protocols. 
 
 RPC is made asynchronously, each call can have any return values. While one call is waiting,
 other calls can be executed. The protocol is bidirectional Call parameters could be
@@ -18,30 +19,56 @@ Exception/errors transmitting is also supported.
 
 The interface is very simple and rubyish:
 
+## Installation
+
+Add this line to your application's Gemfile:
+
 ```ruby
-# The sample class that exports all its methods to the remote callers:
-#
-class TestProvider < Farcall::Provider
+    gem 'farcall'
+    # If you want to use binary-effective boss encoding:
+    # gem 'noss-protocol', '>= 1.4.1' 
+```
 
-  attr :foo_calls, :a, :b
+And then execute:
 
-  def foo a, b, optional: 'none'
-    @foo_calls = (@foo_calls || 0) + 1
-    @a, @b     = a, b
-    return "Foo: #{a+b}, #{optional}"
-  end
-end
+    $ bundle
 
-# create instance and export it to some connected socket:
+Or install it yourself as:
 
-TestProvider.new socket: connected_socket # default format is JSON
+    $ gem install farcall
+
+## Usage
+
+```ruby
+
+    # The sample class that exports all its methods to the remote callers:
+    #
+    class TestProvider < Farcall::Provider
+    
+      attr :foo_calls, :a, :b
+    
+      def foo a, b, optional: 'none'
+        @foo_calls = (@foo_calls || 0) + 1
+        @a, @b     = a, b
+        return "Foo: #{a+b}, #{optional}"
+      end
+    end
+    
+    # create instance and export it to some connected socket:
+    TestProvider.new socket: connected_socket # default format is JSON
+    
+    # or using boss, if you need to pass dates and binary data
+    TestProvider.new socket: connected_socket, format: :boss
 ```
 
 Suppose whe have some socket connected to one above, then TestProvider methods are available via
 this connection:
 
 ```ruby
+
     i = Farcall::Interface.new socket: client_socket
+    # or
+    # i = Farcall::Interface.new socket: client_socket, format: :boss
 
     # Plain arguments
     i.foo(10, 20).should == 'Foo: 30, none'
@@ -57,30 +84,23 @@ this connection:
     i.b.should == 6
 ```
 
-## Installation
+More creation options ofr both provider and interface creation are:
 
-Add this line to your application's Gemfile:
+* `endpoint:` at this point please refrain of using it as endpoint interface is going to change a 
+              bit
+* `transport:` subclass the `Farcall::Transport` and provide your own. It overrides `socket:`, 
+               `input:` and `ouput:` parameters.
+* `input:` and `output:` should be presented both or none - override `socket` - provide streams to
+                         build the transport over.
+                         
 
-```ruby
-gem 'farcall'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install farcall
-
-## Usage
-
-Try to get autodocs. Sorry for now.
+Get more in (online docs)[http://www.rubydoc.info/gems/farcall]
 
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/farcall/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+3. Do not forget ot add specs and ensure all of them pass
+4. Commit your changes (`git commit -am 'Add some feature'`)
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new Pull Request
