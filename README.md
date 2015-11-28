@@ -1,15 +1,10 @@
 # Farcall
 
-## Important!
-
-The gem creation is under active development, current state is: beta. The JSON and 
-[BOSS](https://github.com/sergeych/boss_protocol) formats are supported out of the box,
-thogh XML and other could be easily implemented.
-
 ## Description
 
 The simple and elegant cross-platform RPC protocol that uses any formatter/transport capable of
-transmitting dictionary-like objects, for example, JSON, XML, BSON, BOSS and many others. This gem
+transmitting dictionary-like objects, for example, JSON, 
+[BOSS](https://github.com/sergeych/boss_protocol), XML, BSON and many others. This gem
 supports out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols. 
 
 RPC is made asynchronously, each call can have any return values. While one call is waiting,
@@ -94,8 +89,38 @@ More creation options ofr both provider and interface creation are:
 * `input:` and `output:` should be presented both or none - override `socket` - provide streams to
                          build the transport over.
                          
+## guessing JSON or BOSS
 
-Get more in [online docs](http://www.rubydoc.info/gems/farcall)
+Each one has its pros and contras. 
+
+JSON is widely accepted, and there is a JSON support in literally any platform. It is to some extent
+human readable (well, without line breaks - almost not ;). Still, it has no support for data 
+date/time types so you should convert them somehow, its support for UTF8 is a myth (almost everywhere 
+almost all UTF8 characters are escaped so the text gets many times bigger when transfering). The
+binary data has to be converted to some text form too, like base64. All this compensate its goods. 
+The same, except for UTF8, is right for XML.
+
+[BOSS](https://github.com/sergeych/boss_protocol) is not widely used, and known to me implementations
+exist only for Ruby, Java, Python and I've heard of ObjectiveC implementation. But it is very space-
+effective, can effectively transfer binary data, date/time objects and unlimited length integer out
+of the box. If caches string so when passing large object trees with same keys it provides very
+effective data. It is even more comact that Python's pickle, Ruby's marshalled objects and Java 
+serialized data. Ideal to fast command transfering when reaction time matters, or network speed is
+low.
+
+So, I would recommend:
+
+- of you transfer small data portions limited to JSON data types, use JSON
+
+- if you transfer UTF8 texts with national characters, use BOSS
+ 
+- if you transfer audio, video, images, large arrays and hashes - use BOSS
+ 
+- if you need BOSS but can't find it on your platform, use both and contact me :)
+
+## Documentation
+
+Consult [online docs](http://www.rubydoc.info/gems/farcall)
 
 ## Contributing
 
