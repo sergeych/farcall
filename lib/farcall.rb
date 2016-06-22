@@ -8,6 +8,9 @@ begin
   require 'farcall/boss_transport'
 rescue LoadError
 end
+require 'farcall/wsclient_transport'
+require 'farcall/em_wsserver_endpoint'
+
 
 module Farcall
   # Your code goes here...

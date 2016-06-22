@@ -1,13 +1,19 @@
+require 'hashie'
+
 module Farcall
 
   # The protocol endpoint. Takes some transport and implements Farcall protocol over
   # it. You can use it direcly or with Farcall::RemoteInterface and Farcall::LocalProvider helper
   # classes.
   #
+  # Note that the returned data is converted to Hashie::Mash primarily for the sake of :key vs.
+  # 'key' ambigity that otherwise might appear depending on the transport encoding protocol. Anyway
+  # it is better than ruby hash ;)
+  #
   # Endpoint class is thread-safe.
   class Endpoint
 
-    # Set or get provider instance. When provider is set, its methods are called by the remote
+    # Set or get provider instance. When provider is set, its public methods are called by the remote
     # and any possible exception are passed back to caller party. You can use any ruby class instance
     # everything will work, operators, indexes[] and like.
     attr_accessor :provider
@@ -59,8 +65,9 @@ module Farcall
     end
 
     # Call remote party. Retruns immediately. When remote party answers, calls the specified block
-    # if present. The block should take |error, result| parameters. Error could be nil or
-    # {'class' =>, 'text' => } hash. result is always nil if error is presented.
+    # if present. The block should take |error, result| parameters. If result's content hashes
+    # or result itself are instances of th Hashie::Mash. Error could be nil or
+    # {'class' =>, 'text' => } Hashie::Mash hash. result is always nil if error is presented.
     #
     # It is desirable to use Farcall::Endpoint#interface or
     # Farcall::RemoteInterface rather than this low-level method.
@@ -84,7 +91,8 @@ module Farcall
     # Farcall::RemoteInterface rather than this low-level method.
     #
     # @param [String] name of the remote command
-    # @return [Object] any data that remote party retruns
+    # @return [Object] any data that remote party retruns. If it is a hash, it is a Hashie::Mash
+    #     instance.
     # @raise [Farcall::RemoteError]
     #
     def sync_call(name, *args, **kwargs)
@@ -143,12 +151,14 @@ module Farcall
 
     def _received(data)
       # p [:r, data]
+      data = Hashie::Mash.new data
+
       cmd, serial, args, kwargs, ref, result, error =
           %w{cmd serial args kwargs ref result error}.map { |k| data[k] || data[k.to_sym] }
       !serial || serial < 0 and abort 'missing or bad serial'
 
       @receive_lock.synchronize {
-        serial == @in_serial or abort "bad sync"
+        serial == @in_serial or abort "framing error (wrong serial)"
         @in_serial += 1
       }
 
@@ -161,15 +171,18 @@ module Farcall
                        if kwargs && !kwargs.empty?
                          # ruby thing: keyqord args must be symbols, not strings:
                          fixed = {}
-                         kwargs.each { |k,v| fixed[k.to_sym] = v}
+                         kwargs.each { |k, v| fixed[k.to_sym] = v }
                          args << fixed
                        end
-                       @provider.send cmd.to_sym, *args
+                       @provider.send :remote_call, cmd.to_sym, args
                      elsif @on_remote_call
                        @on_remote_call.call cmd, args, kwargs
                      end
             _send ref: serial, result: result
           rescue Exception => e
+            # puts e
+            # puts e.backtrace.join("\n")
+
             _send ref: serial, error: { 'class' => e.class.name, 'text' => e.to_s }
           end
 
@@ -195,23 +208,54 @@ module Farcall
     # suites you better.
     #
     # Please remember that Farcall::Transport instance could be used with only
-    # one conneced object, unlike Farcall::Endpoint, which could be connected to several
+    # one connected object, unlike Farcall::Endpoint, which could be connected to several
     # consumers.
+    #
+    # @param [Farcall::Endpoint] endpoint to connect to (no transport should be provided).
+    #           note that if endpoint is specified, transport would be ignored eeven if used
+    # @param [Farcall::Transport] transport to use (don't use endpoint then)
     def initialize endpoint: nil, transport: nil, **params
-      @endpoint          = if endpoint
-                             endpoint
-                           else
-                             transport ||= Farcall::Transport.create **params
-                             Farcall::Endpoint.new transport
-                           end
-      @endpoint.provider = self
+      if endpoint || transport || params.size > 0
+        @endpoint          = if endpoint
+                               endpoint
+                             else
+                               transport ||= Farcall::Transport.create **params
+                               Farcall::Endpoint.new transport
+                             end
+        @endpoint.provider = self
+      end
     end
 
     # Get remote interface
-    # @return [Farcall::Interface] to call methods on the other end
+    # @return [Farcall::Interface] to call methods on the other end, e.g. if this provider would
+    # like to call other party's methiod, it can do it cimply by:
+    #
+    #   far_interface.some_method('hello')
+    #
     def far_interface
       @endpoint.remote
     end
+
+    # close connection if need
+    def close_connection
+      @endpoint.close
+    end
+
+    protected
+
+    # Override it to repond to remote calls. Base implementation let invoke only public method
+    # only owned by this class. Be careful to not to expose more than intended!
+    def remote_call name, args
+      m = public_method(name)
+      if m && m.owner == self.class
+        m.call(*args)
+      else
+        raise NoMethodError, "method #{name} is not found"
+      end
+    rescue NameError
+      raise NoMethodError, "method #{name} is not found"
+    end
+
   end
 
   # Intervace to the remote provider via Farcall protocols. Works the same as if the object
@@ -228,7 +272,7 @@ module Farcall
     # Create interface connected to some endpoint ar transpost.
     #
     # Please remember that Farcall::Transport instance could be used with only
-    # one conneced object, unlike Farcall::Endpoint, which could be connected to several
+    # one connected object, unlike Farcall::Endpoint, which could be connected to several
     # consumers.
     #
     # @param [Farcall::Endpoint|Farcall::Transport] arg either endpoint or a transport

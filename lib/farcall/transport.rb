@@ -46,7 +46,9 @@ module Farcall
     end
 
     # Tansport must call this process on each incoming hash
-    # passing it as the only parameter, e.g. self.on_data_received(hash)
+    # passing it as the only parameter, e.g. self.on_data_received.call(hash)
+    # Common trick is to start inner event loop on on_data_recieved=, don't forget
+    # to call super first.
     attr_accessor :on_data_received, :on_abort, :on_close
 
     # Utility function. Calls the provided block on data reception. Resets the

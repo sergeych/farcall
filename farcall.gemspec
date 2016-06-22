@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     pass structures (dictionaries, hashes, whatever you name it). Out of the box provides
     JSON and BOSS formats over streams and sockets.
     End
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/sergeych/farcall"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
@@ -22,8 +22,11 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.7"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec"
-  spec.add_development_dependency "boss-protocol", ">= 1.4.1"
+  spec.add_dependency 'hashie'
+  spec.add_development_dependency 'bundler', '~> 1.7'
+  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'em-websocket'
+  spec.add_development_dependency 'websocket-client-simple'
+  spec.add_development_dependency 'boss-protocol', '>= 1.4.3'
 end

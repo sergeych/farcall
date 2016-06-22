@@ -1,11 +1,23 @@
 # Farcall
 
+## News
+
+Since 1.0.0 farcall gem provides websocket client and server.
+
 ## Description
 
 The simple and elegant cross-platform RPC protocol that uses any formatter/transport capable of
 transmitting dictionary-like objects, for example, JSON, 
 [BOSS](https://github.com/sergeych/boss_protocol), XML, BSON and many others. This gem
-supports out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols. 
+supports out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols and
+streams and sockets as the media.
+
+There is also optional support for eventmachine based wbesocket server and regular client websocket
+connection. All you need is to include gem 'em-websocket' and/or gem 'websocket-client-simple'. 
+All websocket implementations use JSON encoding to vbe interoperable with most web allications.
+
+We do not include them in the dependencies because eventmachine is big and does not work with jruby,
+and websocket client is not always needed and we are fond of minimizing dependencies.
 
 RPC is made asynchronously, each call can have any return values. While one call is waiting,
 other calls can be executed. The protocol is bidirectional Call parameters could be
@@ -15,7 +27,9 @@ dictionary, wahtever.
 Exception/errors transmitting is also supported. The interface is very simple and rubyish. The 
 protocol is very easy to implement if there is no implementation, see 
 [Farcall protocol specification](https://github.com/sergeych/farcall/wiki). Java library for
-Android and desktop is coming soon.
+Android and desktop is ready upon request (leave me a task or a message in th github).
+
+Farcall co
 
 ## Installation
 
@@ -23,8 +37,15 @@ Add this line to your application's Gemfile:
 
 ```ruby
     gem 'farcall'
-    # If you want to use binary-effective boss encoding:
-    # gem 'noss-protocol', '>= 1.4.1' 
+    # If you want to use binary-effective boss encoding, uncomment:
+    # gem 'boss-protocol', '>= 1.4.1'
+    #
+    # if you want to use eventmachine and server websocket, uncomment:
+    # gem 'em-websocket' 
+    # 
+    # To use websocket client, uncomment
+    # gem 'websocket-client-simple'
+     
 ```
 
 And then execute:
@@ -59,8 +80,16 @@ Or install it yourself as:
     TestProvider.new socket: connected_socket, format: :boss
 ```
 
-Suppose whe have some socket connected to one above, then TestProvider methods are available via
-this connection:
+`Farcall::Provider` provides easy constructors to use it with the transport or the endpoint.
+If you need to implement farcall over somw other media, just extend `TestTransport` and provide
+`send_data` and call `on_received_data` when need. It's very simple and straightforward.
+
+Consult [online documentation for Transport](http://www.rubydoc.info/gems/farcall/Farcall/Transport)
+and [Provider](http://www.rubydoc.info/gems/farcall/Farcall/Provider) for more.
+
+In the most common case you just have to connect two sockets, in which case everythng works right
+out of the box. Suppose whe have some socket connected to one above, then TestProvider methods are 
+available via this connection:
 
 ```ruby
 
@@ -120,10 +149,14 @@ So, I would recommend:
  
 - if you need BOSS but can't find it on your platform, use both and contact me :)
 
+## Usage with eventmacine
+
+You can use `EmFarcall::Endpoint` widely as it uses a pair of EM::Channel as a trasnport, e.g.
+it could be easily connected to any evented data source.
+
 ## Documentation
 
 * [Farcall protocol](https://github.com/sergeych/farcall/wiki)
-
 
 * Gem [online docs](http://www.rubydoc.info/gems/farcall)
 

@@ -9,6 +9,8 @@ module Farcall
     # Create json transport, see Farcall::Transpor#create for parameters
     def initialize **params
       setup_streams **params
+      @formatter = Boss::Formatter.new(@output)
+      @formatter.set_stream_mode
     end
 
     def on_data_received= block
@@ -21,7 +23,7 @@ module Farcall
     end
 
     def send_data hash
-      @output << Boss.dump(hash)
+      @formatter << hash
     end
 
     def close
