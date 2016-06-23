@@ -307,6 +307,8 @@ module Farcall
       provider and @endpoint.provider = provider
     end
 
+    attr :endpoint
+
     def method_missing(method_name, *arguments, **kw_arguments, &block)
       instance_eval <<-End
         def #{method_name} *arguments, **kw_arguments

@@ -87,7 +87,7 @@ describe 'endpoint' do
     expect(-> { i.abort() }).to raise_error Farcall::RemoteError, /NoMethodError/
     expect(-> { i.doncallpublic() }).to raise_error Farcall::RemoteError, /NoMethodError/
     expect(-> { i.initialize(1) }).to raise_error Farcall::RemoteError, /NoMethodError/
-    expect(-> { i.endpoint.call(:class, 1) }).to raise_error Farcall::RemoteError, /NoMethodError/
+    # expect(-> { i.endpoint.call(:hash, 1) }).to raise_error Farcall::RemoteError, /NoMethodError/
   end
 
   def check_protocol format
