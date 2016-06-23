@@ -2,7 +2,7 @@
 
 ## News
 
-Since 1.0.0 farcall gem provides websocket client and server.
+Since 1.0.0 farcall gem provides websocket client and server out of the box. 
 
 ## Description
 
@@ -28,8 +28,6 @@ Exception/errors transmitting is also supported. The interface is very simple an
 protocol is very easy to implement if there is no implementation, see 
 [Farcall protocol specification](https://github.com/sergeych/farcall/wiki). Java library for
 Android and desktop is ready upon request (leave me a task or a message in th github).
-
-Farcall co
 
 ## Installation
 
