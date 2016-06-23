@@ -30,10 +30,11 @@ module Farcall
           abort :format_error, $!
         end
       }
-      @send_lock                  = Mutex.new
-      @receive_lock               = Mutex.new
 
-      @waiting = {}
+      @send_lock    = Mutex.new
+      @receive_lock = Mutex.new
+      @handlers     = {}
+      @waiting      = {}
     end
 
     # The provided block will be called if endpoint functioning will be aborted.
@@ -123,13 +124,31 @@ module Farcall
       result
     end
 
-    # Process remote commands. Not that provider have precedence at the moment.
-    # Provided block will be executed on every remote command taking parameters
-    # |name, args, kwargs|. Whatever block returns will be passed to a calling party.
-    # The same any exception that the block might raise would be send back to caller.
+    # Process remote commands. Provided block will be executed on every remote command
+    # taking parameters |name, args, kwargs|. Whatever block returns will be passed to a calling
+    # party. The same any exception that the block might raise would be send back to caller.
+    #
+    # this block will be called onlly of there wes no `provider` specified and no #on handler set
+    # for the command being executed.
+    #
     def on_remote_call &block
       @on_remote_call = block
     end
+
+    alias on_command on_remote_call
+
+    # Set handler to perform the named command. Block will be called when the remote party calls
+    # with parameters passed from the remote. The block returned value will be passed back to
+    # the caller.
+    #
+    # The provider if set is calling instead.
+    #
+    # If the block raises the exception it will be reported to the caller as an error (depending
+    # on it's platofrm, will raise exception on its end or report error)
+    def on(name, &block)
+      @handlers[name.to_s] = block
+    end
+
 
     # Get the Farcall::RemoteInterface connnected to this endpoint. Any subsequent calls with
     # return the same instance.
@@ -175,6 +194,8 @@ module Farcall
                          args << fixed
                        end
                        @provider.send :remote_call, cmd.to_sym, args
+                     elsif (h = @handlers[cmd.to_s])
+                       h.call args, kwargs
                      elsif @on_remote_call
                        @on_remote_call.call cmd, args, kwargs
                      end

@@ -17,7 +17,7 @@ class TestProvider < Farcall::Provider
   end
 
   def get_hash
-    { 'foo' => 'bar', 'bardd' => 'buzz', 'last' => 'item', 'bar' => 'test'}
+    { 'foo' => 'bar', 'bardd' => 'buzz', 'last' => 'item', 'bar' => 'test' }
   end
 
   private
@@ -33,7 +33,7 @@ class StringProvider < Farcall::Provider
   end
 
   def provide_hash
-    { 'bar' => 'test', 'foo' => 'bar'}
+    { 'bar' => 'test', 'foo' => 'bar' }
   end
 
   def value
@@ -43,6 +43,21 @@ end
 
 describe 'endpoint' do
   include Farcall
+
+  it 'runs on commands' do
+    tc = Farcall::LocalConnection.new
+
+    ea = Farcall::Endpoint.new tc.a
+    eb = Farcall::Endpoint.new tc.b
+
+    ea.on('command_one') { |args, kwargs|
+      { 'return_one': [args, kwargs] }
+    }
+    rs = eb.remote.command_one("uno", 'due', tre: 3)
+    rs.return_one[0].should == ['uno', 'due']
+    rs.return_one[1].should == { 'tre' => 3}
+
+  end
 
   it 'should do RPC call with provider/interface' do
     tc = Farcall::LocalConnection.new
@@ -72,6 +87,7 @@ describe 'endpoint' do
     expect(-> { i.abort() }).to raise_error Farcall::RemoteError, /NoMethodError/
     expect(-> { i.doncallpublic() }).to raise_error Farcall::RemoteError, /NoMethodError/
     expect(-> { i.initialize(1) }).to raise_error Farcall::RemoteError, /NoMethodError/
+    expect(-> { i.endpoint.call(:class, 1) }).to raise_error Farcall::RemoteError, /NoMethodError/
   end
 
   def check_protocol format
