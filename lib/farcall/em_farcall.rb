@@ -4,8 +4,8 @@ begin
 
   # As the eventmachine callback paradigm is completely different from the threaded paradigm
   # of the Farcall, that runs pretty well under JRuby and in multithreaded MRI, we provide
-  # compatible but different implementations: EmFarcall::Endpoint, EmFarcall::Interface
-  # and EmFarcall::Provider. Changes to adapt these are minimal except of the callback
+  # compatible but different implementations: {EmFarcall::Endpoint}, {EmFarcall::Interface}
+  # and {EmFarcall::Provider}. Changes to adapt these are minimal except of the callback
   # paradigm. The rest is the same.
   #
   module EmFarcall
@@ -27,7 +27,8 @@ begin
     #
     class Endpoint
 
-      # Create new endpoint to work with 2 channels
+      # Create new endpoint to work with input and output channels
+      #
       # @param [EM::Channel] input_channel
       # @param [EM::Channel] output_channel
       def initialize(input_channel, output_channel, errback=nil, provider: nil)
@@ -55,9 +56,25 @@ begin
       # everything will work, operators, indexes[] and like.
       attr_accessor :provider
 
-      # Call remote with specified name and arguments.
-      # if block is provided, it will be called when the remote will
-      # return with qualsiasi data it return (usually hash)
+      # Call remote with specified name and arguments calling block when done.
+      # if block is provided, it will be called when the remote will be called and possibly return
+      # some data.
+      #
+      # Block receives single object paramter with two fields: `result.error` and `result.result`.
+      #
+      # `result.error` is not nil when the remote raised error, then `error[:class]` and
+      # `error.text` are set accordingly.
+      #
+      # if error is nil then result.result receives any return data from the remote method.
+      #
+      # for example:
+      #
+      #   endpoint.call( 'some_func', 10, 20) { |done|
+      #      if done.error
+      #        puts "Remote error class: #{done.error[:class]}: #{done.error.text}"
+      #      else
+      #        puts "Remote returned #{done.result}"
+      #   }
       #
       # @param [String] name command name
       # @return [Endpoint] self
@@ -85,18 +102,34 @@ begin
         }
       end
 
-      # Set handler to perform the named command. Block will be called when remote party calls the
-      # corresponding method
+      # Set handler to perform the named command. Block will be called when the remote party calls
+      # with parameters passed from the remote. The block returned value will be passed back to
+      # the caller.
+      #
+      # If the block raises the exception it will be reported to the caller as an error (depending
+      # on it's platofrm, will raise exception on its end or report error)
       def on(name, &block)
         @handlers[name.to_s] = block
       end
 
+      # Process remote command. First parameter passed to the block is the method name, the rest
+      # are optional arguments of the call:
+      #
+      #    endpoint.on_command { |name, *args, **kwargs|
+      #      if name == 'echo'
+      #        { args: args, keyword_args: kwargs }
+      #      else
+      #        raise "unknown command"
+      #      end
+      #    }
+      #
+      # raising exceptions from the block cause farcall error to be returned back th the caller.
       def on_command &block
         raise "unnamed handler should be present" unless block
         @unnamed_handler = block
       end
 
-      # Same as on_command (compatibilty method)
+      # Same as #on_command (compatibilty method)
       def on_remote_call &block
         on_command block
       end

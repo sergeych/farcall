@@ -1,5 +1,6 @@
 require 'thread'
 
+# :nodoc:
 class MontorLock
 
   def initialize
@@ -22,6 +23,7 @@ class MontorLock
 
 end
 
+# :nodoc:
 class Semaphore
 
   def initialize state_set=false
