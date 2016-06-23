@@ -2,7 +2,7 @@
 
 ## News
 
-Since 1.0.0 farcall gem provides websocket client and server out of the box. 
+Since 0.3.0 farcall gem provides websocket client and server out of the box. 
 
 ## Description
 
