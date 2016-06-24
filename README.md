@@ -2,7 +2,9 @@
 
 ## News
 
-Since 0.3.0 farcall gem provides websocket client and server out of the box. 
+0.3.0 gem provides websocket client and server out of the box.
+0.3.4 in ./javascript folder there is compatible client implementation that works in most browsers
+      with WebSocket support. Just add it to you web project and enjoy.
 
 ## Description
 
