@@ -12,8 +12,9 @@
 The simple and elegant cross-platform RPC protocol that uses any formatter/transport capable of
 transmitting dictionary-like objects, for example, JSON, 
 [BOSS](https://github.com/sergeych/boss_protocol), XML, BSON and many others. This gem
-supports out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols and
-streams and sockets as the media.
+provides out of the box JSON and [BOSS](https://github.com/sergeych/boss_protocol) protocols and
+websockets (clientm server, and javascript version for the browser or mayme some node app),
+ EventMachine channels, streams and sockets.
 
 There is also optional support for eventmachine based wbesocket server and regular client websocket
 connection. All you need is to include gem 'em-websocket' and/or gem 'websocket-client-simple'. 
