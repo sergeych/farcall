@@ -96,15 +96,9 @@ module Farcall
       setup_streams **params
       @delimiter = delimiter
       @dlength   = -delimiter.length
-    end
-
-    def on_data_received= block
-      super
-      if block && !@thread
-        @thread = Thread.start {
-          load_loop
-        }
-      end
+      @thread = Thread.start {
+        load_loop
+      }
     end
 
     def send_data hash
@@ -127,7 +121,7 @@ module Farcall
       while !@input.eof?
         buffer << @input.read(1)
         if buffer[@dlength..-1] == @delimiter
-          on_data_received and on_data_received.call(JSON.parse(buffer[0...@dlength]))
+          push_input JSON.parse(buffer[0...@dlength])
           buffer = ''
         end
       end

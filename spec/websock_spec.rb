@@ -249,16 +249,14 @@ describe 'em_farcall' do
 
           # EM channels are synchronous so if we call too early call will be simply lost. This,
           # though, should not happen to the socket - so why?
-          EM.add_timer(0) {
-            server.call(:test_method, 'hello', foo: :bar) { block_order = order+=1 }.success { |result|
-              data2         = result
-              promise_order = order += 1
-            }.fail { |e|
-              puts "Error #{e}"
-            }.always { |item|
-              done = item
-              EM.stop
-            }
+          server.call(:test_method, 'hello', foo: :bar) { block_order = order+=1 }.success { |result|
+            data2         = result
+            promise_order = order += 1
+          }.fail { |e|
+            puts "Error #{e}"
+          }.always { |item|
+            done = item
+            EM.stop
           }
         }
       end

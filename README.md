@@ -2,10 +2,9 @@
 
 ## News
 
-0.3.0 gem provides websocket client and server out of the box.
+* websocket client and server out of the box. ./javascript folder there is compatible client implementation that works in most browsers with WebSocket support. Just add it to you web project and enjoy.
 
-0.3.4 in ./javascript folder there is compatible client implementation that works in most browsers
-      with WebSocket support. Just add it to you web project and enjoy.
+* buffering of incoming data in transport to not loose incoming packets beofre Endpoint is connected
 
 ## Description
 

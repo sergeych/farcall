@@ -1,4 +1,5 @@
 require 'hashie'
+require_relative 'promise'
 
 module Farcall
 
@@ -82,20 +83,28 @@ module Farcall
     # or result itself are instances of th Hashie::Mash. Error could be nil or
     # {'class' =>, 'text' => } Hashie::Mash hash. result is always nil if error is presented.
     #
-    # It is desirable to use Farcall::Endpoint#interface or
-    # Farcall::RemoteInterface rather than this low-level method.
+    # Usually, using Farcall::Endpoint#interface or
+    # Farcall::RemoteInterface is more effective rather than this low-level method.
+    #
+    # The returned {Farcall::Promise} instance let add any number of callbacks on commend execution,
+    # success or failure.
     #
     # @param [String] name of the remote command
+    # @return [Farcall::Promise] instance
     def call(name, *args, **kwargs, &block)
+      promise = Farcall::Promise.new
       @send_lock.synchronize {
-        if block != nil
-          @waiting[@out_serial] = {
-              time: Time.new,
-              proc: block
+          @waiting[@out_serial] = -> (error, result) {
+            block.call(error, result) if block
+            if error
+              promise.set_fail error
+            else
+              promise.set_success result
+            end
           }
           _send(cmd: name.to_s, args: args, kwargs: kwargs)
-        end
       }
+      promise
     end
 
     # Call the remote party and wait for the return.
@@ -222,7 +231,7 @@ module Farcall
         when ref
 
           ref or abort 'no reference in return'
-          (w = @waiting.delete ref) != nil and w[:proc].call(error, result)
+          (proc = @waiting.delete ref) != nil and proc.call(error, result)
 
         else
           abort 'unknown command'

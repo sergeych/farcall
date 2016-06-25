@@ -86,16 +86,14 @@ begin
       def call(name, *args, **kwargs, &block)
         promise = Farcall::Promise.new
         EM.schedule {
-          if block
-            @callbacks[@in_serial] = -> (result) {
-              block.call(result) if block != nil
-              if result.error
-                promise.set_fail result.error
-              else
-                promise.set_success result.result
-              end
-            }
-          end
+          @callbacks[@in_serial] = -> (result) {
+            block.call(result) if block != nil
+            if result.error
+              promise.set_fail result.error
+            else
+              promise.set_success result.result
+            end
+          }
           send_block cmd: name, args: args, kwargs: kwargs
         }
         promise

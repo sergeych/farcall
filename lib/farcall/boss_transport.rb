@@ -12,15 +12,9 @@ module Farcall
       setup_streams **params
       @formatter = Boss::Formatter.new(@output)
       @formatter.set_stream_mode
-    end
-
-    def on_data_received= block
-      super
-      if block && !@thread
-        @thread = Thread.start {
-          load_loop
-        }
-      end
+      @thread = Thread.start {
+        load_loop
+      }
     end
 
     def send_data hash
@@ -40,7 +34,7 @@ module Farcall
 
     def load_loop
       Boss::Parser.new(@input).each { |object|
-        on_data_received and on_data_received.call object
+        push_input object
       }
     rescue Errno::EPIPE
       close
