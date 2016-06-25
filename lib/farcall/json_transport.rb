@@ -92,6 +92,7 @@ module Farcall
 
     # Create json transport, see Farcall::Transpor#create for parameters
     def initialize delimiter: "\x00", **params
+      super()
       setup_streams **params
       @delimiter = delimiter
       @dlength   = -delimiter.length

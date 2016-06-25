@@ -20,9 +20,22 @@ module Farcall
 
     # Create endpoint connected to some transport
     # @param [Farcall::Transport] transport
-    def initialize(transport)
+    def initialize(transport, init_proc=nil)
       @transport                  = transport
       @in_serial                  = @out_serial = 0
+      @send_lock    = Mutex.new
+      @receive_lock = Mutex.new
+      @handlers     = {}
+      @waiting      = {}
+
+      init_proc.call(self) if init_proc
+
+      def push_input data
+        p 'me -- pusj!', data
+        @in_buffer << data
+        drain
+      end
+
       @transport.on_data_received = -> (data) {
         begin
           _received(data)
@@ -30,11 +43,10 @@ module Farcall
           abort :format_error, $!
         end
       }
+    end
 
-      @send_lock    = Mutex.new
-      @receive_lock = Mutex.new
-      @handlers     = {}
-      @waiting      = {}
+    def self.open(transport, &block)
+      Endpoint.new(transport, block)
     end
 
     # The provided block will be called if endpoint functioning will be aborted.

@@ -51,6 +51,10 @@ module Farcall
     # to call super first.
     attr_accessor :on_data_received, :on_abort, :on_close
 
+    def initialize
+      @in_buffer = []
+    end
+
     # Utility function. Calls the provided block on data reception. Resets the
     # block with #on_data_received
     def receive_data &block
@@ -72,7 +76,28 @@ module Farcall
       @closed
     end
 
+    # set handler and drain all input packets that may be buffered by the time.
+    def on_data_received= proc
+      @on_data_received = proc
+      drain
+    end
+
+    # Input buffering: transport may start before configure endpoint delegates observer, so
+    # the transport can simply push it here and rely on default buffering.
+    def push_input data
+      @in_buffer << data
+      drain
+    end
+
     protected
+
+    def drain
+      if @in_buffer.size > 0 && on_data_received
+        @in_buffer.each { |x| on_data_received.call(x) }
+        @in_buffer.clear
+      end
+    end
+
 
     # Call it when your connection is closed
     def connection_closed
@@ -99,6 +124,7 @@ module Farcall
       attr_accessor :other
 
       def initialize other_loop = nil
+        super()
         if other_loop
           other_loop.other = self
           @other           = other_loop

@@ -229,5 +229,61 @@ describe 'em_farcall' do
     standard_check_wsclient(cnt1, r1, r2, r3)
   end
 
+  it 'calls from server to client' do
+    data1 = nil
+    data2 = nil
+    done  = nil
+
+    order         = 0
+    block_order   = 0
+    promise_order = 0
+
+    EM.run {
+      params = {
+          :host => 'localhost',
+          :port => 8088
+      }
+      EM::WebSocket.run(params) do |ws|
+        ws.onopen { |handshake|
+          server = EmFarcall::WsServerEndpoint.new ws
+
+          # EM channels are synchronous so if we call too early call will be simply lost. This,
+          # though, should not happen to the socket - so why?
+          EM.add_timer(0) {
+            server.call(:test_method, 'hello', foo: :bar) { block_order = order+=1 }.success { |result|
+              data2         = result
+              promise_order = order += 1
+            }.fail { |e|
+              puts "Error #{e}"
+            }.always { |item|
+              done = item
+              EM.stop
+            }
+          }
+        }
+      end
+
+      EM.defer {
+        t1 = Farcall::WebsocketJsonClientTransport.new 'ws://localhost:8088/test'
+        Farcall::Endpoint.open(t1) { |client|
+          client.on(:test_method) { |args, kwargs|
+            data1 = { 'nice' => [args, kwargs] }
+            { done: :success }
+          }
+        }
+      }
+
+      EM.add_timer(1) {
+        EM.stop
+      }
+    }
+    data1.should == { 'nice' => [['hello'], { 'foo' => 'bar' }] }
+    data2.should == { 'done' => 'success' }
+    done.should be_instance_of(Farcall::Promise)
+    block_order.should == 1
+    promise_order.should == 2
+    done.data.should == data2
+  end
+
 
 end

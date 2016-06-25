@@ -1,6 +1,7 @@
 begin
   require 'hashie'
   require 'eventmachine'
+  require_relative './promise'
 
   # As the eventmachine callback paradigm is completely different from the threaded paradigm
   # of the Farcall, that runs pretty well under JRuby and in multithreaded MRI, we provide
@@ -60,7 +61,9 @@ begin
       # if block is provided, it will be called when the remote will be called and possibly return
       # some data.
       #
-      # Block receives single object paramter with two fields: `result.error` and `result.result`.
+      # Block if present receives single object paramter with two fields: `result.error` and
+      # `result.result`. It is also possible to use returned {Farcall::Promise} instance to set
+      # multiple callbacks with ease. Promise callbacks are called _after_ the block.
       #
       # `result.error` is not nil when the remote raised error, then `error[:class]` and
       # `error.text` are set accordingly.
@@ -77,15 +80,25 @@ begin
       #   }
       #
       # @param [String] name command name
-      # @return [Endpoint] self
+      # @return [Promise] object that call be used to set multiple handlers on success
+      #           or fail event. {Farcall::Promise#succsess} receives remote return result on
+      #           success and {Farcall::Promise#fail} receives error object.
       def call(name, *args, **kwargs, &block)
+        promise = Farcall::Promise.new
         EM.schedule {
           if block
-            @callbacks[@in_serial] = block
+            @callbacks[@in_serial] = -> (result) {
+              block.call(result) if block != nil
+              if result.error
+                promise.set_fail result.error
+              else
+                promise.set_success result.result
+              end
+            }
           end
           send_block cmd: name, args: args, kwargs: kwargs
         }
-        self
+        promise
       end
 
       # Close the endpoint

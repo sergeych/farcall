@@ -8,6 +8,7 @@ module Farcall
 
     # Create json transport, see Farcall::Transpor#create for parameters
     def initialize **params
+      super()
       setup_streams **params
       @formatter = Boss::Formatter.new(@output)
       @formatter.set_stream_mode

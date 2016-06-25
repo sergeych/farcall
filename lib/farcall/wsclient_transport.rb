@@ -25,6 +25,7 @@ begin
       # JSON encodgin over standard websocket protocol.
       def initialize ws_url
         # The stranges bug around in the WebSocket::Client (actually in his eventemitter)
+        super()
         me = self
 
         is_open = Semaphore.new
@@ -39,9 +40,7 @@ begin
         }
 
         @ws.on(:message) { |m|
-          # puts "ws client received #{JSON.parse m.data}"
-          me.on_data_received and me.on_data_received.call(JSON.parse m.data)
-          # puts "and sent"
+          me.push_input JSON.parse(m.data)
         }
         @ws.on(:close) { close }
         is_open.wait_set
@@ -53,6 +52,7 @@ begin
       end
 
     end
+
   end
 rescue LoadError
   $!.to_s =~ /websocket/ or raise
