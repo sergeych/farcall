@@ -78,10 +78,15 @@ module Farcall
       @close_handler and @close_handler.call
     end
 
-    # Call remote party. Retruns immediately. When remote party answers, calls the specified block
-    # if present. The block should take |error, result| parameters. If result's content hashes
-    # or result itself are instances of th Hashie::Mash. Error could be nil or
-    # {'class' =>, 'text' => } Hashie::Mash hash. result is always nil if error is presented.
+    # Call the remote party, non blocking, returns {Farcall::Promise} instance to handle the remote
+    # return valy asynchronously (recommended way).
+    #
+    # Optionally the block could be provided
+    # that takes |error, result| parameters. Error must be  nil or
+    #
+    #     Hashie::Mash.new({'class' =>, 'text' => text [, data: {some_data}] })
+    #
+    # if error is presented, the result is always the nil.
     #
     # Usually, using {#remote} which returns
     # {Farcall::Interface} is more effective rather than this low-level method.
@@ -320,7 +325,7 @@ module Farcall
     # one connected object, unlike Farcall::Endpoint, which could be connected to several
     # consumers.
     #
-    # @param [Farcall::Endpoint|Farcall::Transport] arg either endpoint or a transport
+    # @param arg [Farcall::Endpoint|Farcall::Transport] either endpoint or a transport
     #        to connect interface to
     def initialize endpoint: nil, transport: nil, provider: nil, **params
       @endpoint = if endpoint

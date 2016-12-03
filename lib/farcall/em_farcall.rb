@@ -61,12 +61,13 @@ module EmFarcall
     # everything will work, operators, indexes[] and like.
     attr_accessor :provider
     
-    # Call remote with specified name and arguments calling block when done.
-    # if block is provided, it will be called when the remote will be called and possibly return
-    # some data.
+    # Call the remote method with specified name and arguments calling block when done. Returns
+    # immediately a {Farcall::Promise} instance which could be used to control remote procedure
+    # invocation result asynchronously and effective.
     #
-    # Block if present receives single object paramter with two fields: `result.error` and
-    # `result.result`. It is also possible to use returned {Farcall::Promise} instance to set
+    # Also, if block is provided, it will be called when the remote will be called and possibly
+    # return some data. It receives single object paramter with two fields: result.error and
+    # result.result. It is also possible to use returned {Farcall::Promise} instance to set
     # multiple callbacks with ease. Promise callbacks are called _after_ the block.
     #
     # `result.error` is not nil when the remote raised error, then `error[:class]` and
@@ -83,9 +84,9 @@ module EmFarcall
     #        puts "Remote returned #{done.result}"
     #   }
     #
-    # @param [String] name command name
+    # @param name [String] remote method name
     # @return [Promise] object that call be used to set multiple handlers on success
-    #           or fail event. {Farcall::Promise#succsess} receives remote return result on
+    #           or fail event. {Farcall::Promise#success} receives remote return result on
     #           success and {Farcall::Promise#fail} receives error object.
     def call(name, *args, **kwargs, &block)
       promise = Farcall::Promise.new
