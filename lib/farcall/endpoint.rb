@@ -322,11 +322,14 @@ module Farcall
     # Create interface connected to some endpoint ar transpost.
     #
     # Please remember that Farcall::Transport instance could be used with only
-    # one connected object, unlike Farcall::Endpoint, which could be connected to several
+    # one connected object, unlike the Farcall::Endpoint, which could be connected to several
     # consumers.
     #
-    # @param arg [Farcall::Endpoint|Farcall::Transport] either endpoint or a transport
-    #        to connect interface to
+    # @param endpoint [Farcall::Endpoint] endpoint to connecto to. If not provided, then interface
+    #           will try to use _transport_ or create it using params.
+    # @param transport [Farcall::Transport] transport what to use
+    # @param params [Hash] used to create transport when neither _endpoint_ not _transport_ present
+    #
     def initialize endpoint: nil, transport: nil, provider: nil, **params
       @endpoint = if endpoint
                     endpoint

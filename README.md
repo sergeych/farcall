@@ -2,7 +2,9 @@
 
 ## News
 
-* websocket client and server out of the box. ./javascript folder there is compatible client implementation that works in most browsers with WebSocket support. Just add it to you web project and enjoy.
+* [RemoteError](http://www.rubydoc.info/gems/farcall/Farcall/RemoteError) now can carry any extended information from the remote party 
+
+* Check the [EmFarcall module](http://www.rubydoc.info/gems/farcall/EmFarcall) which strangely missed in the docs tree! Websocket client and EventMmachine-based server for both websockets and normal sockets just out of the box. See ./javascript folder there is compatible client implementation that works in most browsers with WebSocket support. Just add it to you web project and enjoy.
 
 * buffering of incoming data in transport to not loose incoming packets beofre Endpoint is connected
 

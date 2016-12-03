@@ -222,14 +222,9 @@ module EmFarcall
   #
   class Interface
     
-    # Create interface connected to some endpoint ar transpost.
+    # Create interface to the endpoint.
     #
-    # Please remember that Farcall::Transport instance could be used with only
-    # one connected object, unlike Farcall::Endpoint, which could be connected to several
-    # consumers.
-    #
-    # @param [Farcall::Endpoint|Farcall::Transport] arg either endpoint or a transport
-    #        to connect interface to
+    # @param endpoint [Farcall::Endpoint] to connect to.
     def initialize(endpoint)
       @endpoint = endpoint
     end
