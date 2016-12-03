@@ -157,9 +157,10 @@ it could be easily connected to any evented data source.
 
 ## Documentation
 
+* Gem [online docs](http://www.rubydoc.info/gems/farcall)
+
 * [Farcall protocol](https://github.com/sergeych/farcall/wiki)
 
-* Gem [online docs](http://www.rubydoc.info/gems/farcall)
 
 ## Contributing
 

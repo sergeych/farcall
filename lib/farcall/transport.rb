@@ -4,12 +4,30 @@ module Farcall
   class Error < StandardError
   end
 
-  # The error occured while executin remote method
+  # The error occured while executin remote method. Inf an exception is raused while executing remote
+  # method, it will be passed back and raised in the caller thread with an instance of this class.
+  #
+  # The remote can throw regular or extended errors.
+  # Extended errors can pass any data to the other end, which will be available as {#data}.
+  #
+  # To carry error data just raise any exception which respnd_to(:data), which should return hash
+  # with any application specific error data, as in this sample error class:
+  #
+  #    class MyError < StandardError
+  #        def data
+  #          { foo: bar }
+  #        end
+  #    end
+  #
   class RemoteError < Error
+    # The class of the remote error. Usually string name of the class or any other useful string
+    # identifier.
     attr :remote_class
+    # data passed by the remote error or an empty hash
+    attr :data
 
-    def initialize remote_class, text
-      @remote_class = remote_class
+    def initialize remote_class, text, data={}
+      @remote_class, @data = remote_class, data
       super "#{remote_class}: #{text}"
     end
   end
@@ -27,7 +45,7 @@ module Farcall
     #
     #   - socket: connect transport to some socket (should be connected)
     #
-    #   - input and aoutput: two stream-like objects which support read(length) and write(data)
+    #   - input and output: two stream-like objects which support read(length) and write(data)
     #                        parameters
     #
     def self.create format: :json, **params

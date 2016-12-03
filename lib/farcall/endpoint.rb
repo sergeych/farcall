@@ -31,8 +31,8 @@ module Farcall
 
       init_proc.call(self) if init_proc
 
+      # @!visibility private
       def push_input data
-        p 'me -- pusj!', data
         @in_buffer << data
         drain
       end
@@ -61,7 +61,7 @@ module Farcall
       @close_handler = block
     end
 
-    # :nodoc:
+    # @!visibility private
     def abort reason, exception = nil
       puts "*** Abort: reason #{reason || exception.to_s}"
       @abort_hadnler and @abort_hadnler.call reason, exception
@@ -83,8 +83,8 @@ module Farcall
     # or result itself are instances of th Hashie::Mash. Error could be nil or
     # {'class' =>, 'text' => } Hashie::Mash hash. result is always nil if error is presented.
     #
-    # Usually, using Farcall::Endpoint#interface or
-    # Farcall::RemoteInterface is more effective rather than this low-level method.
+    # Usually, using {#remote} which returns
+    # {Farcall::Interface} is more effective rather than this low-level method.
     #
     # The returned {Farcall::Promise} instance let add any number of callbacks on commend execution,
     # success or failure.
@@ -140,7 +140,7 @@ module Farcall
         same_thread or resource.wait(mutex)
       }
       if error
-        raise Farcall::RemoteError.new(error['class'], error['text'])
+        raise Farcall::RemoteError.new(error['class'], error['text'], error['data'])
       end
       result
     end
@@ -171,8 +171,9 @@ module Farcall
     end
 
 
-    # Get the Farcall::RemoteInterface connnected to this endpoint. Any subsequent calls with
+    # Get the {Farcall::Interface} connnected to this endpoint. Any subsequent calls with
     # return the same instance.
+    # @return [Farcall::Interface] the remote interface instance
     def remote
       @remote ||= Farcall::Interface.new endpoint: self
     end
@@ -224,8 +225,9 @@ module Farcall
           rescue Exception => e
             # puts e
             # puts e.backtrace.join("\n")
-
-            _send ref: serial, error: { 'class' => e.class.name, 'text' => e.to_s }
+           error_data = { 'class' => e.class.name, 'text' => e.to_s }
+           e.respond_to?(:data) and error_data[:data] = e.data
+            _send ref: serial, error: error_data
           end
 
         when ref
@@ -300,14 +302,15 @@ module Farcall
 
   end
 
-  # Intervace to the remote provider via Farcall protocols. Works the same as if the object
-  # would be in local data, but slower :) The same as calling Farcall::Endpoint#interface
-  #
-  # RemoteInterface transparently creates methods as you call them to speedup subsequent
-  # calls.
+  # Interface to the remote provider via Farcall protocols. Works the same as the normal, local
+  # object, but slower. This interface is returned by {Farcall::Endpoint#remote}. The Interface
+  # transparently creates methods as you call them to speed up subsequent calls.
   #
   # There is no way to check that the remote responds to some method other than call it and
-  # catch the exception
+  # catch the exception.
+  #
+  # See {Farcall::RemoteError} for more information on passing errors.
+  #
   #
   class Interface
 
@@ -328,8 +331,10 @@ module Farcall
       provider and @endpoint.provider = provider
     end
 
+    # the {Farcall::Endpoint} to which this interface is connected.
     attr :endpoint
 
+    # used internally to synthesize the proxy method.
     def method_missing(method_name, *arguments, **kw_arguments, &block)
       instance_eval <<-End
         def #{method_name} *arguments, **kw_arguments
@@ -339,6 +344,7 @@ module Farcall
       @endpoint.sync_call method_name, *arguments, **kw_arguments
     end
 
+    # used internally to synthesize the proxy method.
     def respond_to_missing?(method_name, include_private = false)
       true
     end

@@ -44,7 +44,7 @@ end
 describe 'endpoint' do
   include Farcall
 
-  it 'runs on commands' do
+  it 'runs commands' do
     tc = Farcall::LocalConnection.new
 
     ea = Farcall::Endpoint.new tc.a
@@ -56,6 +56,26 @@ describe 'endpoint' do
     rs = eb.remote.command_one("uno", 'due', tre: 3)
     rs.return_one[0].should == ['uno', 'due']
     rs.return_one[1].should == { 'tre' => 3}
+  end
+  
+  it 'return extended errors' do
+    class ExtendedError < StandardError
+      def data
+        { extended: 'information'}
+      end
+    end
+
+    tc = Farcall::LocalConnection.new
+
+    ea = Farcall::Endpoint.new tc.a
+    eb = Farcall::Endpoint.new tc.b
+
+    ea.on('emit_extended_error') { |args, kwargs|
+      raise ExtendedError, "SOME TEXT"
+    }
+    expect( ->{eb.remote.emit_extended_error("uno", 'due', tre: 3)} ).to raise_error { |error|
+      error.data['extended'].should == 'information'
+    }
 
   end
 

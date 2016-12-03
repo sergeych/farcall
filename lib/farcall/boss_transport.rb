@@ -6,7 +6,7 @@ module Farcall
   class BossTransport < Farcall::Transport
     include TransportBase
 
-    # Create json transport, see Farcall::Transpor#create for parameters
+    # Create json transport, see Farcall::Transport#create for parameters
     def initialize **params
       super()
       setup_streams **params
