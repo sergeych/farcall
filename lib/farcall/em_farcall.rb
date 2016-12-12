@@ -147,7 +147,7 @@ module EmFarcall
     
     # Same as #on_command (compatibilty method)
     def on_remote_call &block
-      on_command block
+      on_command &block
     end
     
     # Get the Farcall::RemoteInterface connnected to this endpoint. Any subsequent calls with
@@ -182,12 +182,14 @@ module EmFarcall
                end
       send_block ref: ref, result: result
     
-    rescue
+    rescue Exception => e
       if @trace
         puts $!
         puts $!.backtrace.join("\n")
       end
-      send_block ref: ref, error: { class: $!.class.name, text: $!.to_s }
+      error_data = { 'class' => e.class.name, 'text' => e.to_s }
+      e.respond_to?(:data) and error_data[:data] = e.data
+      send_block ref: ref, error: error_data
     end
     
     # :nodoc: important that this method is called from reactor thread only
