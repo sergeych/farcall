@@ -1,4 +1,3 @@
-require 'hashie'
 require_relative 'promise'
 
 module Farcall
@@ -7,7 +6,7 @@ module Farcall
   # it. You can use it direcly or with Farcall::RemoteInterface and Farcall::LocalProvider helper
   # classes.
   #
-  # Note that the returned data is converted to Hashie::Mash primarily for the sake of :key vs.
+  # Note that the returned data is converted to SmartHash primarily for the sake of :key vs.
   # 'key' ambigity that otherwise might appear depending on the transport encoding protocol. Anyway
   # it is better than ruby hash ;)
   #
@@ -84,7 +83,7 @@ module Farcall
     # Optionally the block could be provided
     # that takes |error, result| parameters. Error must be  nil or
     #
-    #     Hashie::Mash.new({'class' =>, 'text' => text [, data: {some_data}] })
+    #     SmartHash.new({'class' =>, 'text' => text [, data: {some_data}] })
     #
     # if error is presented, the result is always the nil.
     #
@@ -118,7 +117,7 @@ module Farcall
     # Farcall::RemoteInterface rather than this low-level method.
     #
     # @param [String] name of the remote command
-    # @return [Object] any data that remote party retruns. If it is a hash, it is a Hashie::Mash
+    # @return [Object] any data that remote party retruns. If it is a hash, it is a SmartHash
     #     instance.
     # @raise [Farcall::RemoteError]
     #
@@ -197,7 +196,7 @@ module Farcall
 
     def _received(data)
       # p [:r, data]
-      data = Hashie::Mash.new data
+      data = SmartHash.new data
 
       cmd, serial, args, kwargs, ref, result, error =
           %w{cmd serial args kwargs ref result error}.map { |k| data[k] || data[k.to_sym] }

@@ -1,5 +1,5 @@
-
 require 'farcall/version'
+require 'farcall/smart_hash'
 require 'farcall/transport'
 require 'farcall/json_transport'
 require 'farcall/endpoint'
@@ -14,8 +14,6 @@ require 'farcall/em_wsserver_endpoint'
 rescue LoadError
   $!.to_s =~ /em-websocket/ or raise
 end
-
-  
 
 module Farcall
   # Your code goes here...

@@ -1,6 +1,7 @@
-require 'hashie'
 require 'eventmachine'
 require_relative './promise'
+
+include Farcall
 
 # As the eventmachine callback paradigm is completely different from the threaded paradigm
 # of the Farcall, that runs pretty well under JRuby and in multithreaded MRI, we provide
@@ -14,7 +15,7 @@ require_relative './promise'
 #     require 'eventmachine'
 #     require 'farcall'
 module EmFarcall
-  
+
   # Endpoint that run in the reactor thread of the EM. Eventmachine should run by the time of
   # creation of the endpoint. All the methods can be called from any thread, not only
   # EM's reactor thread.
@@ -195,7 +196,7 @@ module EmFarcall
     # :nodoc: important that this method is called from reactor thread only
     def process_input data
       # To be free from :keys and 'keys'
-      data = Hashie::Mash.new(data) unless data.is_a?(Hashie::Mash)
+      data = SmartHash.new(data) unless data.is_a?(SmartHash)
       if data.serial != @in_serial
         error "framing error (wrong serial:)"
       else
@@ -206,7 +207,7 @@ module EmFarcall
           ref = data.ref
           if ref
             if (block = @callbacks.delete(ref)) != nil
-              block.call(Hashie::Mash.new(result: data.result, error: data.error))
+              block.call(SmartHash.new(result: data.result, error: data.error))
             end
           else
             error "framing error: no ref in block #{data.inspect}"

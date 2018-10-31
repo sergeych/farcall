@@ -1,9 +1,11 @@
 require 'spec_helper'
 require 'eventmachine'
 
+include Farcall
+
 def standard_check_wsclient(cnt1, r1, r2, r3)
-  r1 = Hashie::Mash.new(r1)
-  r2 = Hashie::Mash.new(r2)
+  r1 = SmartHash.new(r1)
+  r2 = SmartHash.new(r2)
 
   r1.kwargs.hello.should == 'world'
   r1.superpong.should == [1, 2, 3]
