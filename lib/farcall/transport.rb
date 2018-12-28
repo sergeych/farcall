@@ -4,13 +4,13 @@ module Farcall
   class Error < StandardError
   end
 
-  # The error occured while executin remote method. Inf an exception is raused while executing remote
+  # The error occured while executin remote method. Inf an exception is raised while executing remote
   # method, it will be passed back and raised in the caller thread with an instance of this class.
   #
   # The remote can throw regular or extended errors.
   # Extended errors can pass any data to the other end, which will be available as {#data}.
   #
-  # To carry error data just raise any exception which respnd_to(:data), which should return hash
+  # To carry error data just raise any exception which respond_to(:data), which should return hash
   # with any application specific error data, as in this sample error class:
   #
   #    class MyError < StandardError
@@ -39,14 +39,14 @@ module Farcall
 
     # Create transport with a given format and parameters.
     #
-    # format right now can be only :json
+    # Format right now can be only :json
     #
-    # creation parameters can be:
+    # Creation parameters can be:
     #
     #   - socket: connect transport to some socket (should be connected)
     #
     #   - input and output: two stream-like objects which support read(length) and write(data)
-    #                        parameters
+    #                       parameters
     #
     def self.create format: :json, **params
       case format
@@ -63,7 +63,7 @@ module Farcall
       end
     end
 
-    # Tansport must call this process on each incoming hash
+    # Transport must call this process on each incoming hash
     # passing it as the only parameter, e.g. self.on_data_received.call(hash)
     # Common trick is to start inner event loop on on_data_recieved=, don't forget
     # to call super first.
@@ -94,7 +94,7 @@ module Farcall
       @closed
     end
 
-    # set handler and drain all input packets that may be buffered by the time.
+    # Set handler and drain all input packets that may be buffered by the time.
     def on_data_received= proc
       @on_data_received = proc
       drain
@@ -133,7 +133,7 @@ module Farcall
   end
 
   # Test connection that provides 2 interconnected transports
-  # TestConnection#a and TestConnection#b that could be used to connect Endpoints
+  # TestConnection#a and TestConnection#b that could be used to connect Endpoints.
   class LocalConnection
 
     # :nodoc:
